@@ -16,6 +16,7 @@ class AdaServoPositioner : public MlTimer
 {
 public:
   AdaServoPositioner(const char *name, int pin);
+  const char *get_name(void) { return name; };
   void set_microseconds(int us);
   void set_position(int position);
   int minimum;
