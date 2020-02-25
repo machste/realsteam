@@ -24,7 +24,7 @@
 
 /* Defines for the servo #2 to control the steam */
 #define STEAM_SERVO_PIN 1
-#define STEAM_POS_CLOSE 1015
+#define STEAM_POS_CLOSE 1030
 #define STEAM_POS_OPEN 1951
 
 /* Defines for the servo #3 to control the breaks */
@@ -43,6 +43,10 @@
 #define DECOUPLE_POS_OFF 1325
 #define DECOUPLE_POS_ON 2040
 
+/* Defines for the servo #6 to control the whistle */
+#define WHISTLE_SERVO_PIN 5
+#define WHISTLE_POS_CLOSE 1000
+#define WHISTLE_POS_OPEN 1800
 
 class Rf24Receiver : public MlAction
 {
@@ -68,6 +72,7 @@ AdaServoPositioner steam_servo("steam", STEAM_SERVO_PIN);
 AdaServoPositioner breaks_servo("breaks", BREAKS_SERVO_PIN);
 AdaServoPositioner drain_servo("drain", DRAIN_SERVO_PIN);
 AdaServoPositioner decouple_servo("decouple", DECOUPLE_SERVO_PIN);
+AdaServoPositioner whistle_servo("whistle", WHISTLE_SERVO_PIN);
 
 void setup(void)
 {
@@ -128,7 +133,7 @@ void Rf24Receiver::servo_cb(ServoMessage *servo)
 {
   int us = -1;
   if (servo->index == 1) {
-    Serial.print("valves: ");
+    Serial.print(valves_servo.get_name());
     if (servo->value < 512) {
       us = map(servo->value, 0, 511, VALVES_POS_BACKWARD,
           VALVES_POS_NEUTRAL);
@@ -138,11 +143,11 @@ void Rf24Receiver::servo_cb(ServoMessage *servo)
     }
     valves_servo.set_microseconds(us);
   } else if (servo->index == 2) {
-    Serial.print("steam: ");
+    Serial.print(steam_servo.get_name());
     us = map(servo->value, 0, 1023, STEAM_POS_CLOSE, STEAM_POS_OPEN);
     steam_servo.set_microseconds(us);
   } else if (servo->index == 3) {
-    Serial.print("breaks: ");
+    Serial.print(breaks_servo.get_name());
     if (servo->value < 50 ) {
       us = map(servo->value, 0, 49, BREAKS_POS_RELEASE, BREAKS_POS_SOFT);
     } else {
@@ -150,17 +155,22 @@ void Rf24Receiver::servo_cb(ServoMessage *servo)
     }
     breaks_servo.set_microseconds(us);
   } else if (servo->index == 4) {
-    Serial.print("drain: ");
+    Serial.print(drain_servo.get_name());
     us = map(servo->value, 0, 1023, DRAIN_POS_CLOSE, DRAIN_POS_OPEN);
     drain_servo.set_microseconds(us);
+  } else if (servo->index == 5) {
+    Serial.print(whistle_servo.get_name());
+    us = map(servo->value, 0, 1023, WHISTLE_POS_CLOSE, WHISTLE_POS_OPEN);
+    whistle_servo.set_microseconds(us);
   } else if (servo->index == 100) {
-    Serial.print("decouple: ");
+    Serial.print(decouple_servo.get_name());
     us = (servo->value == 0) ? DECOUPLE_POS_OFF : DECOUPLE_POS_ON;
     decouple_servo.set_microseconds(us);
   }
   if (us < 0) {
     Serial.println("unknown servo");
   } else {
+    Serial.print(": ");
     Serial.println(us);
   }
 }

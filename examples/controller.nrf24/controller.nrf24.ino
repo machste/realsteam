@@ -70,10 +70,11 @@ bool loc_present = false;
 InfoResponse info_res;
 bool info_res_valid = false;
 ServoInfo servo_infos[] = {
-  { .name = "values: ", .in=A0, .prev_value=0 },
-  { .name = "steam: ", .in=A1, .prev_value=0 },
-  { .name = "break: ", .in=A2, .prev_value=0 },
-  { .name = "drain: ", .in=A3, .prev_value=0 }
+  { .name = "values: ", .in = A0, .prev_value = 0 },
+  { .name = "steam: ", .in = A1, .prev_value = 0 },
+  { .name = "break: ", .in = A2, .prev_value = 0 },
+  { .name = "drain: ", .in = A3, .prev_value = 0 },
+  { .name = "whistle", .in = A4, .prev_value = 0}
 };
 int decoupling_state = -1;
 
