@@ -24,7 +24,10 @@
 #define LCD_D6 3
 #define LCD_D7 2
 
+#define DECOUPLING_PIN 6
+
 #define SAMPLE_TIME 10
+#define ANALOG_THRESHOLD 2
 #define LOC_WATCH_TIME 1000
 #define LCD_UPDATE_TIME 500
 
@@ -70,8 +73,9 @@ ServoInfo servo_infos[] = {
   { .name = "values: ", .in=A0, .prev_value=0 },
   { .name = "steam: ", .in=A1, .prev_value=0 },
   { .name = "break: ", .in=A2, .prev_value=0 },
-  { .name = "drain: ", .in=A3, .prev_value=0 },
+  { .name = "drain: ", .in=A3, .prev_value=0 }
 };
+int decoupling_state = -1;
 
 
 void setup() {
@@ -79,6 +83,7 @@ void setup() {
   Serial.print("Lok Controller\nRF24: ");
   lcd.begin(16, 2);
   lcd.print("init ...");
+  pinMode(DECOUPLING_PIN, INPUT);
   rf.begin();
   if (rf.isChipConnected()) {
     rf.openWritingPipe(rf_addrs[0]);
@@ -117,11 +122,12 @@ void sampler_cb(MlTimer *timer, void *arg)
     return;
   }
   ServoMessage servo_msg;
+  // Check all analog inputs
   for (int i = 0; i < sizeof(servo_infos) / sizeof(ServoInfo); i++) {
     servo_msg.index = i + 1;
     servo_msg.value  = analogRead(servo_infos[i].in);
-    if (servo_infos[i].prev_value + 2 < servo_msg.value
-        || servo_infos[i].prev_value - 2 > servo_msg.value) {
+    if (servo_infos[i].prev_value + ANALOG_THRESHOLD < servo_msg.value
+        || servo_infos[i].prev_value - ANALOG_THRESHOLD > servo_msg.value) {
       Serial.print(servo_infos[i].name);
       if (rf.write(&servo_msg, sizeof(servo_msg))) {
         Serial.println(servo_msg.value);
@@ -131,6 +137,21 @@ void sampler_cb(MlTimer *timer, void *arg)
         loc_present = false;
         Serial.println("NOK");
       }
+    }
+  }
+  // Check the decoupling button
+  int state = !digitalRead(DECOUPLING_PIN);
+  if (decoupling_state != state) {
+    Serial.print("decoupling: ");
+    servo_msg.index = 100;
+    servo_msg.value = state;
+    if (rf.write(&servo_msg, sizeof(servo_msg))) {
+      Serial.println(servo_msg.value);
+      decoupling_state = state;
+      loc_present = true;
+    } else {
+      loc_present = false;
+      Serial.println("NOK");
     }
   }
 }

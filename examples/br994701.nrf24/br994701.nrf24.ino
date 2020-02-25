@@ -7,7 +7,7 @@
 #include <MlAction.h>
 
 #include <LocMessage.h>
-#include <ServoPositioner.h>
+#include <AdaServoPositioner.h>
 
 
 /* Defines for the nRF24L01 radio module */
@@ -17,25 +17,31 @@
 #define RF24_CHIP_SELECT_NOT 8
 
 /* Defines for the servo #1 to control the slide valves */
-#define VALVES_SERVO_PIN 3
-#define VALVES_POS_FORWARD 40
-#define VALVES_POS_NEUTRAL 88
-#define VALVES_POS_BACKWARD 140
+#define VALVES_SERVO_PIN 0
+#define VALVES_POS_FORWARD 900
+#define VALVES_POS_NEUTRAL 1428
+#define VALVES_POS_BACKWARD 1780
 
 /* Defines for the servo #2 to control the steam */
-#define STEAM_SERVO_PIN 5
-#define STEAM_POS_CLOSE 35
-#define STEAM_POS_OPEN 131
+#define STEAM_SERVO_PIN 1
+#define STEAM_POS_CLOSE 1015
+#define STEAM_POS_OPEN 1951
 
 /* Defines for the servo #3 to control the breaks */
-#define BREAKS_SERVO_PIN 6
-#define BREAKS_POS_RELEASE 100
-#define BREAKS_POS_HARD 79
+#define BREAKS_SERVO_PIN 2
+#define BREAKS_POS_RELEASE 1550
+#define BREAKS_POS_SOFT 1400
+#define BREAKS_POS_HARD 1300
 
 /* Defines for the servo #4 to drain water from the cylinders */
-#define DRAIN_SERVO_PIN 9
-#define DRAIN_POS_OPEN 37
-#define DRAIN_POS_CLOSE 145
+#define DRAIN_SERVO_PIN 3
+#define DRAIN_POS_OPEN 1060
+#define DRAIN_POS_CLOSE 2000
+
+/* Defines for the servo #5 to decouple the carriages */
+#define DECOUPLE_SERVO_PIN 4
+#define DECOUPLE_POS_OFF 1325
+#define DECOUPLE_POS_ON 2040
 
 
 class Rf24Receiver : public MlAction
@@ -57,11 +63,11 @@ MLoop mloop;
 RF24 rf(RF24_CHIP_ENABLE, RF24_CHIP_SELECT_NOT);
 Rf24Receiver rf_rx;
 const byte rf_addrs[][6] = { RF24_TX_ADDRESS, RF24_RX_ADDRESS };
-ServoPositioner valves_servo("valves", VALVES_SERVO_PIN);
-ServoPositioner steam_servo("steam", STEAM_SERVO_PIN);
-ServoPositioner breaks_servo("breaks", BREAKS_SERVO_PIN);
-ServoPositioner drain_servo("drain", DRAIN_SERVO_PIN);
-
+AdaServoPositioner valves_servo("valves", VALVES_SERVO_PIN);
+AdaServoPositioner steam_servo("steam", STEAM_SERVO_PIN);
+AdaServoPositioner breaks_servo("breaks", BREAKS_SERVO_PIN);
+AdaServoPositioner drain_servo("drain", DRAIN_SERVO_PIN);
+AdaServoPositioner decouple_servo("decouple", DECOUPLE_SERVO_PIN);
 
 void setup(void)
 {
@@ -84,6 +90,7 @@ void setup(void)
   mloop.add(&steam_servo);
   mloop.add(&breaks_servo);
   mloop.add(&drain_servo);
+  mloop.add(&decouple_servo);
   Serial.println("ok");
 }
 
@@ -119,30 +126,42 @@ void Rf24Receiver::run(void)
 
 void Rf24Receiver::servo_cb(ServoMessage *servo)
 {
-  int pos = -1;
+  int us = -1;
   if (servo->index == 1) {
     Serial.print("valves: ");
-    pos = map(servo->value, 0, 1023, VALVES_POS_BACKWARD,
-        VALVES_POS_FORWARD);
-    valves_servo.set_position(pos);
+    if (servo->value < 512) {
+      us = map(servo->value, 0, 511, VALVES_POS_BACKWARD,
+          VALVES_POS_NEUTRAL);
+    } else {
+      us = map(servo->value, 512, 1023, VALVES_POS_NEUTRAL,
+          VALVES_POS_FORWARD);
+    }
+    valves_servo.set_microseconds(us);
   } else if (servo->index == 2) {
     Serial.print("steam: ");
-    pos = map(servo->value, 0, 1023, STEAM_POS_CLOSE, STEAM_POS_OPEN);
-    steam_servo.set_position(pos);
+    us = map(servo->value, 0, 1023, STEAM_POS_CLOSE, STEAM_POS_OPEN);
+    steam_servo.set_microseconds(us);
   } else if (servo->index == 3) {
     Serial.print("breaks: ");
-    pos = map(servo->value, 0, 1023, BREAKS_POS_RELEASE,
-        BREAKS_POS_HARD);
-    breaks_servo.set_position(pos);
+    if (servo->value < 50 ) {
+      us = map(servo->value, 0, 49, BREAKS_POS_RELEASE, BREAKS_POS_SOFT);
+    } else {
+      us = map(servo->value, 50, 1023, BREAKS_POS_SOFT, BREAKS_POS_HARD);
+    }
+    breaks_servo.set_microseconds(us);
   } else if (servo->index == 4) {
     Serial.print("drain: ");
-    pos = map(servo->value, 0, 1023, DRAIN_POS_CLOSE, DRAIN_POS_OPEN);
-    drain_servo.set_position(pos);
+    us = map(servo->value, 0, 1023, DRAIN_POS_CLOSE, DRAIN_POS_OPEN);
+    drain_servo.set_microseconds(us);
+  } else if (servo->index == 100) {
+    Serial.print("decouple: ");
+    us = (servo->value == 0) ? DECOUPLE_POS_OFF : DECOUPLE_POS_ON;
+    decouple_servo.set_microseconds(us);
   }
-  if (pos < 0) {
+  if (us < 0) {
     Serial.println("unknown servo");
   } else {
-    Serial.println(pos);
+    Serial.println(us);
   }
 }
 
