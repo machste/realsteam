@@ -10,7 +10,6 @@ AdaServoPositioner::AdaServoPositioner(const char *name, int pin)
 
 void AdaServoPositioner::init_pwm(void)
 {
-  Serial.println("init pwm");
   pwm.begin();
   pwm.setOscillatorFrequency(27000000);
   pwm.setPWMFreq(50);
