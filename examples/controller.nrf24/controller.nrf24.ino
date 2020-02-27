@@ -74,7 +74,8 @@ ServoInfo servo_infos[] = {
   { .name = "steam: ", .in = A1, .prev_value = 0 },
   { .name = "break: ", .in = A2, .prev_value = 0 },
   { .name = "drain: ", .in = A3, .prev_value = 0 },
-  { .name = "whistle", .in = A4, .prev_value = 0}
+  { .name = "whistle", .in = A4, .prev_value = 0},
+  { .name = "gas", .in = A5, .prev_value = 0},
 };
 int decoupling_state = -1;
 
@@ -182,10 +183,15 @@ void lcd_updater_cb(MlTimer *timer, void *arg)
   if (info_res_valid) {
     // Display ambient temperature
     int temp = (5 * info_res.ambient_temp - 512) * 0.0977;
-    char temp_str[16];
-    snprintf(temp_str, sizeof(temp_str), "%3u%cC", temp, 223);
+    char str[16];
+    snprintf(str, sizeof(str), "%3u%cC", temp, 223);
     lcd.setCursor(3, 0);
-    lcd.print(temp_str);
+    lcd.print(str);
+    // Display pressure of the steam boiler
+    int p = (info_res.pressure - 102) * 0.0084;
+    snprintf(str, sizeof(str), "%u.%02ubar", int(p), int(p * 100) % 100);
+    lcd.setCursor(9, 0);
+    lcd.print(str);
   }
   // Display time
   lcd.setCursor(0, 1);

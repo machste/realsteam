@@ -48,6 +48,13 @@
 #define WHISTLE_POS_CLOSE 1000
 #define WHISTLE_POS_OPEN 1800
 
+/* Defines for the servo #7 to control the gas burner  */
+#define GAS_SERVO_PIN 6
+#define GAS_POS_CLOSE 1300
+#define GAS_POS_MIN 1400
+#define GAS_POS_OPEN 1800
+
+
 class Rf24Receiver : public MlAction
 {
 public:
@@ -73,6 +80,7 @@ AdaServoPositioner breaks_servo("breaks", BREAKS_SERVO_PIN);
 AdaServoPositioner drain_servo("drain", DRAIN_SERVO_PIN);
 AdaServoPositioner decouple_servo("decouple", DECOUPLE_SERVO_PIN);
 AdaServoPositioner whistle_servo("whistle", WHISTLE_SERVO_PIN);
+AdaServoPositioner gas_servo("gas", GAS_SERVO_PIN);
 
 void setup(void)
 {
@@ -96,6 +104,8 @@ void setup(void)
   mloop.add(&breaks_servo);
   mloop.add(&drain_servo);
   mloop.add(&decouple_servo);
+  mloop.add(&whistle_servo);
+  mloop.add(&gas_servo);
   Serial.println("ok");
 }
 
@@ -162,6 +172,10 @@ void Rf24Receiver::servo_cb(ServoMessage *servo)
     Serial.print(whistle_servo.get_name());
     us = map(servo->value, 0, 1023, WHISTLE_POS_CLOSE, WHISTLE_POS_OPEN);
     whistle_servo.set_microseconds(us);
+  } else if (servo->index == 6) {
+    Serial.print(gas_servo.get_name());
+    us = map(servo->value, 0, 1023, GAS_POS_CLOSE, GAS_POS_OPEN);
+    gas_servo.set_microseconds(us);
   } else if (servo->index == 100) {
     Serial.print(decouple_servo.get_name());
     us = (servo->value == 0) ? DECOUPLE_POS_OFF : DECOUPLE_POS_ON;
@@ -179,6 +193,7 @@ void Rf24Receiver::info_cb(InfoRequest *req)
 {
   InfoResponse res;
   res.ambient_temp = analogRead(A0);
+  res.pressure = analogRead(A1);
   rf.stopListening();
   rf.write(&res, sizeof(res));
   rf.startListening();

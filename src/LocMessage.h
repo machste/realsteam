@@ -26,6 +26,7 @@ struct InfoResponse
   InfoResponse() : type(INFO_RESPONSE) {};
   MessageType type;
   int ambient_temp;
+  int pressure;
 };
 
 #endif /* LOC_MESSAGE_H */
