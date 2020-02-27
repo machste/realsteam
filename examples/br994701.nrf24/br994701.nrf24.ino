@@ -20,7 +20,7 @@
 #define VALVES_SERVO_PIN 0
 #define VALVES_POS_FORWARD 900
 #define VALVES_POS_NEUTRAL 1428
-#define VALVES_POS_BACKWARD 1780
+#define VALVES_POS_BACKWARD 1850
 
 /* Defines for the servo #2 to control the steam */
 #define STEAM_SERVO_PIN 1
@@ -50,9 +50,9 @@
 
 /* Defines for the servo #7 to control the gas burner  */
 #define GAS_SERVO_PIN 6
-#define GAS_POS_CLOSE 1300
-#define GAS_POS_MIN 1400
-#define GAS_POS_OPEN 1800
+#define GAS_POS_CLOSE 900
+#define GAS_POS_MIN 1200
+#define GAS_POS_OPEN 2000
 
 
 class Rf24Receiver : public MlAction
