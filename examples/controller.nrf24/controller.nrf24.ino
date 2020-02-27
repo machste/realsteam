@@ -188,8 +188,9 @@ void lcd_updater_cb(MlTimer *timer, void *arg)
     lcd.setCursor(3, 0);
     lcd.print(str);
     // Display pressure of the steam boiler
-    int p = (info_res.pressure - 102) * 0.0084;
-    snprintf(str, sizeof(str), "%u.%02ubar", int(p), int(p * 100) % 100);
+    int p = info_res.pressure - 102;
+    p = (p > 0) ? p * 0.84 : 0;
+    snprintf(str, sizeof(str), "%d.%02ubar", p / 100, p % 100);
     lcd.setCursor(9, 0);
     lcd.print(str);
   }
