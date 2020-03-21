@@ -13,18 +13,18 @@
 /* Defines for the nRF24L01 radio module */
 #define RF24_TX_ADDRESS "00001"
 #define RF24_RX_ADDRESS "00002"
-#define RF24_CHIP_ENABLE 7
-#define RF24_CHIP_SELECT_NOT 8
+#define RF24_CHIP_ENABLE 48
+#define RF24_CHIP_SELECT_NOT 49
 #define RF24_RX_TIMEOUT 20
 
-#define LCD_RESET 10
-#define LCD_ENABLE 9
-#define LCD_D4 5
-#define LCD_D5 4
-#define LCD_D6 3
-#define LCD_D7 2
+#define LCD_D4 22
+#define LCD_D5 23
+#define LCD_D6 24
+#define LCD_D7 25
+#define LCD_ENABLE 26
+#define LCD_RESET 27
 
-#define DECOUPLING_PIN 6
+#define DECOUPLING_PIN 30
 
 #define SAMPLE_TIME 10
 #define ANALOG_THRESHOLD 2
@@ -74,8 +74,8 @@ ServoInfo servo_infos[] = {
   { .name = "steam: ", .in = A1, .prev_value = 0 },
   { .name = "break: ", .in = A2, .prev_value = 0 },
   { .name = "drain: ", .in = A3, .prev_value = 0 },
-  { .name = "whistle", .in = A4, .prev_value = 0},
-  { .name = "gas", .in = A5, .prev_value = 0},
+  { .name = "whistle: ", .in = A4, .prev_value = 0},
+  { .name = "gas: ", .in = A5, .prev_value = 0},
 };
 int decoupling_state = -1;
 
