@@ -182,7 +182,7 @@ void lcd_updater_cb(MlTimer *timer, void *arg)
   }
   if (info_res_valid) {
     // Display ambient temperature
-    int temp = (5 * info_res.ambient_temp - 512) * 0.0977;
+    int temp = (info_res.ambient_temp - 540) / -2.785;
     char str[16];
     snprintf(str, sizeof(str), "%3u%cC", temp, 223);
     lcd.setCursor(3, 0);
@@ -222,8 +222,6 @@ void Rf24Receiver::run(void)
   rf_rx.stop();
   rf_rx_timeout.stop();
   info_res_valid = true;
-  Serial.print("ambient: ");
-  Serial.println(info_res.ambient_temp);
 }
 
 void rf_rx_timeout_cb(MlTimer *timer, void *arg)
